@@ -87,6 +87,11 @@ module axi4_lite_tb;
       #10us;
 
       dut_master.write(.data(32'hDEADBEEF), .addr(8'hC4), .resp(m_bresp_tmp));
+   end
+
+   initial begin
+      #10us;
+
       dut_master.read(.addr(8'hC4), .data(m_data_tmp));
    end
 
