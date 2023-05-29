@@ -32,6 +32,43 @@ module axi4_lite_master_bfm(conn);
       logic [$bits(conn.rresp)-1:0]  rresp;
    } axi4_lite_beat_t;
 
+
+   typedef struct {
+      // Write address channel
+      logic                          awvalid;
+      // logic                          awready;
+      logic [$bits(conn.awaddr)-1:0] awaddr;
+      logic [$bits(conn.awprot)-1:0] awprot;
+
+      // Write data channel
+      logic                          wvalid;
+      // logic                          wready;
+      logic [$bits(conn.wdata)-1:0]  wdata;
+      logic [$bits(conn.wstrb)-1:0]  wstrb;
+
+      // Write response channel
+      // logic                          bvalid;
+      logic                          bready;
+      // logic [$bits(conn.bresp)-1:0]  bresp;
+   } axi4_lite_write_beat_t;
+
+
+   typedef struct {
+      // Read address channel
+      logic                          arvalid;
+      // logic                          arready;
+      logic [$bits(conn.araddr)-1:0] araddr;
+      logic [$bits(conn.arprot)-1:0] arprot;
+
+      // Read data channel
+      // logic                          rvalid;
+      logic                          rready;
+      // logic [$bits(conn.rdata)-1:0]  rdata;
+      // logic [$bits(conn.rresp)-1:0]  rresp;
+   } axi4_lite_read_beat_t;
+
+
+
    typedef mailbox #(axi4_lite_beat_t) axi4_lite_inbox_t;
 
    axi4_lite_inbox_t axi4_lite_inbox  = new();
@@ -41,7 +78,36 @@ module axi4_lite_master_bfm(conn);
    axi4_lite_beat_t temp_beat;
 
 
+   ////////////////////////////////////////////////////////////////////////////
+   // Write inbox
+   ////////////////////////////////////////////////////////////////////////////
+   typedef mailbox #(axi4_lite_write_beat_t) axi4_lite_write_inbox_t;
 
+   axi4_lite_write_inbox_t axi4_lite_write_inbox  = new();
+   axi4_lite_write_inbox_t axi4_lite_write_expect = new();
+
+   axi4_lite_write_beat_t empty_write_beat = '{default: '0};
+   axi4_lite_write_beat_t temp_write_beat;
+
+
+   ////////////////////////////////////////////////////////////////////////////
+   // Read inbox
+   ////////////////////////////////////////////////////////////////////////////
+   typedef mailbox #(axi4_lite_read_beat_t) axi4_lite_read_inbox_t;
+
+   axi4_lite_read_inbox_t axi4_lite_read_inbox  = new();
+   axi4_lite_read_inbox_t axi4_lite_read_expect = new();
+
+   axi4_lite_read_beat_t empty_read_beat = '{default: '0};
+   axi4_lite_read_beat_t temp_read_beat;
+
+
+
+   ////////////////////////////////////////////////////////////////////////////
+   ////////////////////////////////////////////////////////////////////////////
+   // Write operations
+   ////////////////////////////////////////////////////////////////////////////
+   ////////////////////////////////////////////////////////////////////////////
    /**************************************************************************
     * Write data transaction
     **************************************************************************/
@@ -57,6 +123,11 @@ module axi4_lite_master_bfm(conn);
    endtask
 
 
+   ////////////////////////////////////////////////////////////////////////////
+   ////////////////////////////////////////////////////////////////////////////
+   // Read operations
+   ////////////////////////////////////////////////////////////////////////////
+   ////////////////////////////////////////////////////////////////////////////
    /**************************************************************************
     * Read data transaction
     **************************************************************************/
@@ -70,13 +141,18 @@ module axi4_lite_master_bfm(conn);
    endtask
 
 
+   // ////////////////////////////////////////////////////////////////////////////
+   // ////////////////////////////////////////////////////////////////////////////
+   // // Main operation
+   // ////////////////////////////////////////////////////////////////////////////
+   // ////////////////////////////////////////////////////////////////////////////
    // initial begin
    //    $timeformat(-9, 2, " ns", 20);
 
    //    #1;
 
    //    forever begin
-   // 	 if(axis_inbox.try_get(temp_beat) != 0) begin
+   // 	 if(axi4_lite_master_write_inbox.try_get(temp_beat) != 0) begin
    // 	    write_beat(temp_beat);
 
    // 	    $display("%t: AXIS Master - Write Data - '%x'", $time, temp_beat.tdata);
@@ -100,6 +176,11 @@ module axi4_lite_master_bfm(conn);
    // end
 
 
+   ////////////////////////////////////////////////////////////////////////////
+   ////////////////////////////////////////////////////////////////////////////
+   // Interface connections
+   ////////////////////////////////////////////////////////////////////////////
+   ////////////////////////////////////////////////////////////////////////////
    // Write address channel
    handshake_if #(.DATA_BITS(16)) aw_conn(.clk(conn.aclk), .rst(conn.aresetn));
    handshake_master write_addr(aw_conn);

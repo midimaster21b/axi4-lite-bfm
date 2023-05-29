@@ -42,9 +42,9 @@ module axi4_lite_slave_bfm(conn);
 
 
    /**************************************************************************
-    * Write data transaction
+    * Receive data from a master write
     **************************************************************************/
-   task accept_data;
+   task receive;
       input  logic [$bits(conn.bresp)-1:0]  resp;
 
       output logic [$bits(conn.wdata)-1:0]  data;
@@ -58,11 +58,12 @@ module axi4_lite_slave_bfm(conn);
 
 
    /**************************************************************************
-    * Read data transaction
+    * Respond to a master read
     **************************************************************************/
-   task read_response;
+   task respond;
       input  logic [$bits(conn.awaddr)-1:0] addr;
-      output logic [$bits(conn.wdata)-1:0]  data;
+      input  logic [$bits(conn.wdata)-1:0]  data;
+
       begin
 	 read_addr.get_beat(addr);
 	 read_data.put_simple_beat(data);
@@ -70,32 +71,35 @@ module axi4_lite_slave_bfm(conn);
    endtask
 
 
+   // /**************************************************************************
+   //  * Receive tb commands
+   //  **************************************************************************/
    // initial begin
    //    $timeformat(-9, 2, " ns", 20);
 
    //    #1;
 
    //    forever begin
-   // 	 if(axis_inbox.try_get(temp_beat) != 0) begin
-   // 	    write_beat(temp_beat);
+   //	 if(axi4_lite_slave_inbox.try_get(temp_beat) != 0) begin
+   //	    write_beat(temp_beat);
 
-   // 	    $display("%t: AXIS Slave - Write Data - '%x'", $time, temp_beat.tdata);
+   //	    $display("%t: AXI4-Lite Slave - Write Data - '%x'", $time, temp_beat.tdata);
 
-   // 	    @(negedge conn.aclk)
-   // 	    if(conn.tready == '0) begin
-   // 	       wait(conn.tready == '1);
-   // 	    end
+   //	    @(negedge conn.aclk)
+   //	    if(conn.tready == '0) begin
+   //	       wait(conn.tready == '1);
+   //	    end
 
-   // 	    // Wait for device ready
-   // 	    @(posedge conn.aclk && conn.tready == '1);
+   //	    // Wait for device ready
+   //	    @(posedge conn.aclk && conn.tready == '1);
 
-   // 	 end else begin
-   // 	    write_beat(empty_beat);
+   //	 end else begin
+   //	    write_beat(empty_beat);
 
-   // 	    // Wait for the next clock cycle
-   // 	    @(posedge conn.aclk);
+   //	    // Wait for the next clock cycle
+   //	    @(posedge conn.aclk);
 
-   // 	 end
+   //	 end
    //    end
    // end
 
