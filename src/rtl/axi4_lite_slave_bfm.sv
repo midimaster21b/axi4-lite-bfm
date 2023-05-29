@@ -41,35 +41,33 @@ module axi4_lite_slave_bfm(conn);
    axi4_lite_beat_t temp_beat;
 
 
-   // /**************************************************************************
-   //  * Write data transaction
-   //  **************************************************************************/
-   // task accept_data;
-   //    input  logic [$bits(conn.bresp)-1:0]  resp;
+   /**************************************************************************
+    * Write data transaction
+    **************************************************************************/
+   task accept_data;
+      input  logic [$bits(conn.bresp)-1:0]  resp;
 
-   //    output logic [$bits(conn.wdata)-1:0]  data;
-   //    output logic [$bits(conn.awaddr)-1:0] addr;
-   //    begin
-   // 	 write_addr.get_beat(addr);
-   // 	 write_data.get_beat(data);
-   // 	 bresp.put_simple_beat(resp);
-   //    end
-   // endtask
-
-
-   // /**************************************************************************
-   //  * Read data transaction
-   //  **************************************************************************/
-   // task read_response;
-   //    input  logic [$bits(conn.awaddr)-1:0] addr;
-   //    output logic [$bits(conn.wdata)-1:0]  data;
-   //    begin
-   // 	 read_addr.get_beat(addr);
-   // 	 read_data.put_simple_beat(data);
-   //    end
-   // endtask
+      output logic [$bits(conn.wdata)-1:0]  data;
+      output logic [$bits(conn.awaddr)-1:0] addr;
+      begin
+	 write_addr.get_beat(addr);
+	 write_data.get_beat(data);
+	 bresp.put_simple_beat(resp);
+      end
+   endtask
 
 
+   /**************************************************************************
+    * Read data transaction
+    **************************************************************************/
+   task read_response;
+      input  logic [$bits(conn.awaddr)-1:0] addr;
+      output logic [$bits(conn.wdata)-1:0]  data;
+      begin
+	 read_addr.get_beat(addr);
+	 read_data.put_simple_beat(data);
+      end
+   endtask
 
 
    // initial begin
@@ -104,7 +102,7 @@ module axi4_lite_slave_bfm(conn);
 
    // Write address channel
    handshake_if #(.DATA_BITS(16)) aw_conn(.clk(conn.aclk), .rst(conn.aresetn));
-   handshake_slave  write_addr(aw_conn);
+   handshake_slave #(.ALWAYS_READY(0)) write_addr(aw_conn);
 
    assign aw_conn.valid = conn.awvalid;
    assign conn.awready  = aw_conn.ready;
@@ -115,7 +113,7 @@ module axi4_lite_slave_bfm(conn);
 
    // Write data channel
    handshake_if #(.DATA_BITS(48)) w_conn(.clk(conn.aclk), .rst(conn.aresetn));
-   handshake_slave  write_data(w_conn);
+   handshake_slave #(.ALWAYS_READY(0)) write_data(w_conn);
 
    assign w_conn.valid = conn.wvalid;
    assign conn.wready  = w_conn.ready;
@@ -134,7 +132,7 @@ module axi4_lite_slave_bfm(conn);
 
    // Read address channel
    handshake_if #(.DATA_BITS(16)) ar_conn(.clk(conn.aclk), .rst(conn.aresetn));
-   handshake_slave  read_addr(ar_conn);
+   handshake_slave #(.ALWAYS_READY(0)) read_addr(ar_conn);
 
    assign ar_conn.valid = conn.arvalid;
    assign conn.arready  = ar_conn.ready;

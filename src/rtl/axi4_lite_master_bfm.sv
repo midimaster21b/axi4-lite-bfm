@@ -42,34 +42,32 @@ module axi4_lite_master_bfm(conn);
 
 
 
-   // /**************************************************************************
-   //  * Write data transaction
-   //  **************************************************************************/
-   // task write;
-   //    input  logic [$bits(conn.wdata)-1:0]  data;
-   //    input  logic [$bits(conn.awaddr)-1:0] addr;
-   //    output logic [$bits(conn.bresp)-1:0]  resp;
-   //    begin
-   // 	 write_addr.put_simple_beat(addr);
-   // 	 write_data.put_simple_beat(data);
-   // 	 bresp.get_beat(resp);
-   //    end
-   // endtask
+   /**************************************************************************
+    * Write data transaction
+    **************************************************************************/
+   task write;
+      input  logic [$bits(conn.wdata)-1:0]  data;
+      input  logic [$bits(conn.awaddr)-1:0] addr;
+      output logic [$bits(conn.bresp)-1:0]  resp;
+      begin
+	 write_addr.put_simple_beat(addr);
+	 write_data.put_simple_beat(data);
+	 bresp.get_beat(resp);
+      end
+   endtask
 
 
-   // /**************************************************************************
-   //  * Read data transaction
-   //  **************************************************************************/
-   // task read;
-   //    input  logic [$bits(conn.awaddr)-1:0] addr;
-   //    output logic [$bits(conn.wdata)-1:0]  data;
-   //    begin
-   // 	 read_addr.put_simple_beat(addr);
-   // 	 read_data.get_beat(data);
-   //    end
-   // endtask
-
-
+   /**************************************************************************
+    * Read data transaction
+    **************************************************************************/
+   task read;
+      input  logic [$bits(conn.awaddr)-1:0] addr;
+      output logic [$bits(conn.wdata)-1:0]  data;
+      begin
+	 read_addr.put_simple_beat(addr);
+	 read_data.get_beat(data);
+      end
+   endtask
 
 
    // initial begin
@@ -143,8 +141,7 @@ module axi4_lite_master_bfm(conn);
 
    // Read data channel
    handshake_if #(.DATA_BITS(48)) r_conn(.clk(conn.aclk), .rst(conn.aresetn));
-   handshake_slave #(.ALWAYS_READY(0)) rd_data(r_conn);
-   // handshake_slave  testing(r_conn);
+   handshake_slave #(.ALWAYS_READY(0)) read_data(r_conn);
 
    assign r_conn.valid = conn.rvalid;
    assign conn.rready  = r_conn.ready;
