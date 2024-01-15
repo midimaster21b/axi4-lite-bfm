@@ -116,10 +116,15 @@ module axi4_lite_master_bfm(conn);
       input  logic [$bits(conn.awaddr)-1:0] addr;
       output logic [$bits(conn.bresp)-1:0]  resp;
       begin
+	 $timeformat(-9, 2, " ns", 20);
+	 $display("%t: m_axil - Write Data - Addr: %X, Data: %x", $time, addr, data);
 	 write_addr.put_simple_beat(addr);
 	 write_data.put_simple_beat(data);
+	 $display("%t: m_axil - Writing done, waiting for respone...", $time);
 	 bresp.expect_beat(2'h1);
+	 $display("%t: m_axil - Writing done, getting response...", $time);
 	 bresp.get_beat(resp);
+	 $display("%t: m_axil - Writing done, got response...", $time);
       end
    endtask
 
@@ -141,41 +146,6 @@ module axi4_lite_master_bfm(conn);
 	 read_data.get_beat(data);
       end
    endtask
-
-
-   // ////////////////////////////////////////////////////////////////////////////
-   // ////////////////////////////////////////////////////////////////////////////
-   // // Main operation
-   // ////////////////////////////////////////////////////////////////////////////
-   // ////////////////////////////////////////////////////////////////////////////
-   // initial begin
-   //    $timeformat(-9, 2, " ns", 20);
-
-   //    #1;
-
-   //    forever begin
-   // 	 if(axi4_lite_master_write_inbox.try_get(temp_beat) != 0) begin
-   // 	    write_beat(temp_beat);
-
-   // 	    $display("%t: AXIS Master - Write Data - '%x'", $time, temp_beat.tdata);
-
-   // 	    @(negedge conn.aclk)
-   // 	    if(conn.tready == '0) begin
-   // 	       wait(conn.tready == '1);
-   // 	    end
-
-   // 	    // Wait for device ready
-   // 	    @(posedge conn.aclk && conn.tready == '1);
-
-   // 	 end else begin
-   // 	    write_beat(empty_beat);
-
-   // 	    // Wait for the next clock cycle
-   // 	    @(posedge conn.aclk);
-
-   // 	 end
-   //    end
-   // end
 
 
    ////////////////////////////////////////////////////////////////////////////

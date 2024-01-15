@@ -46,7 +46,6 @@ module axi4_lite_slave_bfm(conn);
     **************************************************************************/
    task receive;
       input  logic [$bits(conn.bresp)-1:0]  resp;
-
       output logic [$bits(conn.wdata)-1:0]  data;
       output logic [$bits(conn.awaddr)-1:0] addr;
       begin
@@ -63,7 +62,6 @@ module axi4_lite_slave_bfm(conn);
    task respond;
       input  logic [$bits(conn.awaddr)-1:0] addr;
       input  logic [$bits(conn.wdata)-1:0]  data;
-
       begin
 	 read_addr.get_beat(addr);
 	 read_data.put_simple_beat(data);
@@ -71,39 +69,11 @@ module axi4_lite_slave_bfm(conn);
    endtask
 
 
-   // /**************************************************************************
-   //  * Receive tb commands
-   //  **************************************************************************/
-   // initial begin
-   //    $timeformat(-9, 2, " ns", 20);
-
-   //    #1;
-
-   //    forever begin
-   //	 if(axi4_lite_slave_inbox.try_get(temp_beat) != 0) begin
-   //	    write_beat(temp_beat);
-
-   //	    $display("%t: AXI4-Lite Slave - Write Data - '%x'", $time, temp_beat.tdata);
-
-   //	    @(negedge conn.aclk)
-   //	    if(conn.tready == '0) begin
-   //	       wait(conn.tready == '1);
-   //	    end
-
-   //	    // Wait for device ready
-   //	    @(posedge conn.aclk && conn.tready == '1);
-
-   //	 end else begin
-   //	    write_beat(empty_beat);
-
-   //	    // Wait for the next clock cycle
-   //	    @(posedge conn.aclk);
-
-   //	 end
-   //    end
-   // end
-
-
+   ////////////////////////////////////////////////////////////////////////////
+   ////////////////////////////////////////////////////////////////////////////
+   // Interface connections
+   ////////////////////////////////////////////////////////////////////////////
+   ////////////////////////////////////////////////////////////////////////////
    // Write address channel
    handshake_if #(.DATA_BITS($bits(conn.awaddr)+$bits(conn.awprot))) aw_conn(.clk(conn.aclk), .rst(conn.aresetn));
    handshake_slave #(.ALWAYS_READY(0), .IFACE_NAME("s_axil_aw")) write_addr(aw_conn);
@@ -112,7 +82,6 @@ module axi4_lite_slave_bfm(conn);
    assign conn.awready  = aw_conn.ready;
    assign aw_conn.data[($bits(conn.awaddr)-1):0] = conn.awaddr;
    assign aw_conn.data[($bits(conn.awprot)-1)+$bits(conn.awaddr):$bits(conn.awaddr)] = conn.awprot;
-
 
 
    // Write data channel

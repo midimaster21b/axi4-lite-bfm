@@ -88,6 +88,8 @@ module axi4_lite_tb;
       #500ns;
 
       dut_master.write(.data(32'hDEADBEEF), .addr(8'hC4), .resp(m_bresp_tmp));
+      dut_master.write(.data(32'hCAFEFEED), .addr(8'hC5), .resp(m_bresp_tmp));
+      dut_master.write(.data(32'hDEC0DED3), .addr(8'hC6), .resp(m_bresp_tmp));
    end
 
    // Read port
@@ -108,6 +110,8 @@ module axi4_lite_tb;
    initial begin
       #250ns;
 
+      dut_slave.receive(.data(s_data_tmp), .addr(s_addr_tmp), .resp(s_bresp_tmp));
+      dut_slave.receive(.data(s_data_tmp), .addr(s_addr_tmp), .resp(s_bresp_tmp));
       dut_slave.receive(.data(s_data_tmp), .addr(s_addr_tmp), .resp(s_bresp_tmp));
       dut_slave.respond(.addr(8'hC4), .data(32'hABCD1234));
    end
