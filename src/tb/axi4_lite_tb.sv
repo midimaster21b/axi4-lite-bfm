@@ -69,7 +69,7 @@ module axi4_lite_tb;
 
 
    initial begin
-      #10us;
+      #500ns;
 
       // dut_master.write(.data(32'hDEADBEEF), .addr(8'hC4), .resp());
       // dut_master.read(.addr(8'hC4), .data());
@@ -84,13 +84,13 @@ module axi4_lite_tb;
    logic [31:0] m_data_tmp;
 
    initial begin
-      #10us;
+      #500ns;
 
       dut_master.write(.data(32'hDEADBEEF), .addr(8'hC4), .resp(m_bresp_tmp));
    end
 
    initial begin
-      #10us;
+      #500ns;
 
       dut_master.read(.addr(8'hC4), .data(m_data_tmp));
    end
@@ -104,10 +104,10 @@ module axi4_lite_tb;
    logic [31:0] s_addr_tmp;
 
    initial begin
-      #5us;
+      #250ns;
 
       dut_slave.receive(.data(s_data_tmp), .addr(s_addr_tmp), .resp(s_bresp_tmp));
-      dut_slave.respond(.addr(8'hC4), .data(32'hABCD));
+      dut_slave.respond(.addr(8'hC4), .data(32'hABCD1234));
    end
 
 
