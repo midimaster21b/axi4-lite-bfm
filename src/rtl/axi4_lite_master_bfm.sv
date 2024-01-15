@@ -182,8 +182,8 @@ module axi4_lite_master_bfm(conn);
    ////////////////////////////////////////////////////////////////////////////
    ////////////////////////////////////////////////////////////////////////////
    // Write address channel
-   handshake_if #(.DATA_BITS(16)) aw_conn(.clk(conn.aclk), .rst(conn.aresetn));
-   handshake_master write_addr(aw_conn);
+   handshake_if #(.DATA_BITS($bits(conn.awaddr))) aw_conn(.clk(conn.aclk), .rst(conn.aresetn));
+   handshake_master #(.IFACE_NAME("m_axil_aw")) write_addr(aw_conn);
 
    assign conn.awvalid  = aw_conn.valid;
    assign aw_conn.ready = conn.awready;
@@ -192,8 +192,8 @@ module axi4_lite_master_bfm(conn);
 
 
    // Write data channel
-   handshake_if #(.DATA_BITS(48)) w_conn(.clk(conn.aclk), .rst(conn.aresetn));
-   handshake_master write_data(w_conn);
+   handshake_if #(.DATA_BITS($bits(conn.wdata))) w_conn(.clk(conn.aclk), .rst(conn.aresetn));
+   handshake_master #(.IFACE_NAME("m_axil_w")) write_data(w_conn);
 
    assign conn.wvalid  = w_conn.valid;
    assign w_conn.ready = conn.wready;
@@ -202,8 +202,8 @@ module axi4_lite_master_bfm(conn);
 
 
    // Write response channel
-   handshake_if #(.DATA_BITS(8)) b_conn(.clk(conn.aclk), .rst(conn.aresetn));
-   handshake_slave #(.ALWAYS_READY(0)) bresp(b_conn);
+   handshake_if #(.DATA_BITS($bits(conn.bresp))) b_conn(.clk(conn.aclk), .rst(conn.aresetn));
+   handshake_slave #(.ALWAYS_READY(0), .IFACE_NAME("m_axil_bresp")) bresp(b_conn);
 
    assign b_conn.valid = conn.bvalid;
    assign conn.bready  = b_conn.ready;
@@ -211,8 +211,8 @@ module axi4_lite_master_bfm(conn);
 
 
    // Read address channel
-   handshake_if #(.DATA_BITS(16)) ar_conn(.clk(conn.aclk), .rst(conn.aresetn));
-   handshake_master read_addr(ar_conn);
+   handshake_if #(.DATA_BITS($bits(conn.awaddr))) ar_conn(.clk(conn.aclk), .rst(conn.aresetn));
+   handshake_master #(.IFACE_NAME("m_axil_ar")) read_addr(ar_conn);
 
    assign conn.arvalid  = ar_conn.valid;
    assign ar_conn.ready = conn.arready;
@@ -221,8 +221,8 @@ module axi4_lite_master_bfm(conn);
 
 
    // Read data channel
-   handshake_if #(.DATA_BITS(48)) r_conn(.clk(conn.aclk), .rst(conn.aresetn));
-   handshake_slave #(.ALWAYS_READY(0)) read_data(r_conn);
+   handshake_if #(.DATA_BITS($bits(conn.rdata))) r_conn(.clk(conn.aclk), .rst(conn.aresetn));
+   handshake_slave #(.ALWAYS_READY(0), .IFACE_NAME("m_axil_r")) read_data(r_conn);
 
    assign r_conn.valid = conn.rvalid;
    assign conn.rready  = r_conn.ready;
