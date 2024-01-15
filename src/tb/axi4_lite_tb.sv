@@ -83,12 +83,14 @@ module axi4_lite_tb;
    logic [1:0]  m_bresp_tmp;
    logic [31:0] m_data_tmp;
 
+   // Write port
    initial begin
       #500ns;
 
       dut_master.write(.data(32'hDEADBEEF), .addr(8'hC4), .resp(m_bresp_tmp));
    end
 
+   // Read port
    initial begin
       #500ns;
 

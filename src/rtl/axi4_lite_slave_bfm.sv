@@ -105,7 +105,7 @@ module axi4_lite_slave_bfm(conn);
 
 
    // Write address channel
-   handshake_if #(.DATA_BITS($bits(conn.awaddr))) aw_conn(.clk(conn.aclk), .rst(conn.aresetn));
+   handshake_if #(.DATA_BITS($bits(conn.awaddr)+$bits(conn.awprot))) aw_conn(.clk(conn.aclk), .rst(conn.aresetn));
    handshake_slave #(.ALWAYS_READY(0), .IFACE_NAME("s_axil_aw")) write_addr(aw_conn);
 
    assign aw_conn.valid = conn.awvalid;
@@ -116,7 +116,7 @@ module axi4_lite_slave_bfm(conn);
 
 
    // Write data channel
-   handshake_if #(.DATA_BITS($bits(conn.wdata))) w_conn(.clk(conn.aclk), .rst(conn.aresetn));
+   handshake_if #(.DATA_BITS($bits(conn.wdata)+$bits(conn.wstrb))) w_conn(.clk(conn.aclk), .rst(conn.aresetn));
    handshake_slave #(.ALWAYS_READY(0), .IFACE_NAME("s_axil_w")) write_data(w_conn);
 
    assign w_conn.valid = conn.wvalid;
@@ -135,7 +135,7 @@ module axi4_lite_slave_bfm(conn);
 
 
    // Read address channel
-   handshake_if #(.DATA_BITS($bits(conn.awaddr))) ar_conn(.clk(conn.aclk), .rst(conn.aresetn));
+   handshake_if #(.DATA_BITS($bits(conn.awaddr)+$bits(conn.arprot))) ar_conn(.clk(conn.aclk), .rst(conn.aresetn));
    handshake_slave #(.ALWAYS_READY(0), .IFACE_NAME("s_axil_ar")) read_addr(ar_conn);
 
    assign ar_conn.valid = conn.arvalid;
@@ -145,7 +145,7 @@ module axi4_lite_slave_bfm(conn);
 
 
    // Read data channel
-   handshake_if #(.DATA_BITS($bits(conn.rdata))) r_conn(.clk(conn.aclk), .rst(conn.aresetn));
+   handshake_if #(.DATA_BITS($bits(conn.rdata)+$bits(conn.rresp))) r_conn(.clk(conn.aclk), .rst(conn.aresetn));
    handshake_master #(.IFACE_NAME("s_axil_r")) read_data(r_conn);
 
    assign conn.rvalid  = r_conn.valid;

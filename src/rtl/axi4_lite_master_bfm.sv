@@ -118,6 +118,7 @@ module axi4_lite_master_bfm(conn);
       begin
 	 write_addr.put_simple_beat(addr);
 	 write_data.put_simple_beat(data);
+	 bresp.expect_beat(2'h1);
 	 bresp.get_beat(resp);
       end
    endtask
@@ -136,6 +137,7 @@ module axi4_lite_master_bfm(conn);
       output logic [$bits(conn.wdata)-1:0]  data;
       begin
 	 read_addr.put_simple_beat(addr);
+	 read_data.expect_beat(32'h0);
 	 read_data.get_beat(data);
       end
    endtask
@@ -182,7 +184,7 @@ module axi4_lite_master_bfm(conn);
    ////////////////////////////////////////////////////////////////////////////
    ////////////////////////////////////////////////////////////////////////////
    // Write address channel
-   handshake_if #(.DATA_BITS($bits(conn.awaddr))) aw_conn(.clk(conn.aclk), .rst(conn.aresetn));
+   handshake_if #(.DATA_BITS($bits(conn.awaddr)+$bits(conn.awprot))) aw_conn(.clk(conn.aclk), .rst(conn.aresetn));
    handshake_master #(.IFACE_NAME("m_axil_aw")) write_addr(aw_conn);
 
    assign conn.awvalid  = aw_conn.valid;
@@ -192,7 +194,7 @@ module axi4_lite_master_bfm(conn);
 
 
    // Write data channel
-   handshake_if #(.DATA_BITS($bits(conn.wdata))) w_conn(.clk(conn.aclk), .rst(conn.aresetn));
+   handshake_if #(.DATA_BITS($bits(conn.wdata)+$bits(conn.wstrb))) w_conn(.clk(conn.aclk), .rst(conn.aresetn));
    handshake_master #(.IFACE_NAME("m_axil_w")) write_data(w_conn);
 
    assign conn.wvalid  = w_conn.valid;
@@ -211,7 +213,7 @@ module axi4_lite_master_bfm(conn);
 
 
    // Read address channel
-   handshake_if #(.DATA_BITS($bits(conn.awaddr))) ar_conn(.clk(conn.aclk), .rst(conn.aresetn));
+   handshake_if #(.DATA_BITS($bits(conn.araddr)+$bits(conn.arprot))) ar_conn(.clk(conn.aclk), .rst(conn.aresetn));
    handshake_master #(.IFACE_NAME("m_axil_ar")) read_addr(ar_conn);
 
    assign conn.arvalid  = ar_conn.valid;
@@ -221,7 +223,7 @@ module axi4_lite_master_bfm(conn);
 
 
    // Read data channel
-   handshake_if #(.DATA_BITS($bits(conn.rdata))) r_conn(.clk(conn.aclk), .rst(conn.aresetn));
+   handshake_if #(.DATA_BITS($bits(conn.rdata)+$bits(conn.rresp))) r_conn(.clk(conn.aclk), .rst(conn.aresetn));
    handshake_slave #(.ALWAYS_READY(0), .IFACE_NAME("m_axil_r")) read_data(r_conn);
 
    assign r_conn.valid = conn.rvalid;
