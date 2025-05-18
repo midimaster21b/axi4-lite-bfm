@@ -43,22 +43,14 @@ architecture tb of axi4_lite_bfm_tb is
   signal write_queue_empty : std_logic;
   signal read_queue_empty  : std_logic;
 
-  -- shared variable write_queue : write_queue_t;
-  -- shared variable read_queue  : read_queue_t;
-  -- shared variable write_queue : write_queue_t(MAX_QUEUE_SIZE-1 downto 0)(
   signal write_queue : write_queue_t(MAX_QUEUE_SIZE-1 downto 0)(
     addr(ADDR_WIDTH-1 downto 0),
     data(DATA_WIDTH-1 downto 0),
     strb((DATA_WIDTH/8)-1 downto 0)
     );
-  -- shared variable read_queue  : read_queue_t(MAX_QUEUE_SIZE-1 downto 0)(
   signal read_queue  : read_queue_t(MAX_QUEUE_SIZE-1 downto 0)(
     addr(ADDR_WIDTH-1 downto 0)
     );
-  -- shared variable write_tail  : integer := 0;
-  -- shared variable read_tail   : integer := 0;
-  -- shared variable write_count : integer := 0;
-  -- shared variable read_count  : integer := 0;
   signal write_tail  : integer := 0;
   signal read_tail   : integer := 0;
   signal write_count : integer := 0;
@@ -199,7 +191,7 @@ begin
     wait_cycles(2);
 
     -- Queue write transaction
-    master_bfm.queue_write(
+    queue_write(
       queue => write_queue,
       tail  => write_tail,
       count => write_count,
@@ -218,14 +210,14 @@ begin
     wait until read_queue_empty = '1';
     wait_cycles(2);
 
-    -- -- Queue read transaction
-    -- master_bfm.queue_read(
-    --   queue => read_queue,
-    --   tail => read_tail,
-    --   count => read_count,
-    --   addr => TEST_ADDR,
-    --   prot => TEST_PROT
-    -- );
+    -- Queue read transaction
+    queue_read(
+      queue => read_queue,
+      tail => read_tail,
+      count => read_count,
+      addr => TEST_ADDR,
+      prot => TEST_PROT
+    );
 
     -- Wait for read to complete
     wait until read_queue_empty = '1';
