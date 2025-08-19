@@ -43,19 +43,6 @@ architecture tb of axi4_lite_bfm_tb is
   signal write_queue_empty : std_logic;
   signal read_queue_empty  : std_logic;
 
-  signal write_queue : write_queue_t(MAX_QUEUE_SIZE-1 downto 0)(
-    addr(ADDR_WIDTH-1 downto 0),
-    data(DATA_WIDTH-1 downto 0),
-    strb((DATA_WIDTH/8)-1 downto 0)
-    );
-  signal read_queue  : read_queue_t(MAX_QUEUE_SIZE-1 downto 0)(
-    addr(ADDR_WIDTH-1 downto 0)
-    );
-  signal write_tail  : integer := 0;
-  signal read_tail   : integer := 0;
-  signal write_count : integer := 0;
-  signal read_count  : integer := 0;
-
   -- Test control signals
   signal test_done : boolean := false;
 
@@ -120,6 +107,8 @@ begin
     constant TEST_DATA : std_logic_vector(DATA_WIDTH-1 downto 0) := x"DEAD_BEEF";
     constant TEST_STRB : std_logic_vector(DATA_WIDTH/8-1 downto 0) := (others => '1');
     constant TEST_PROT : std_logic_vector(2 downto 0) := "000";
+    variable write_success : boolean;
+    variable read_success : boolean;
 
     -- Wait for a number of clock cycles
     procedure wait_cycles(n : integer) is
@@ -139,16 +128,14 @@ begin
     wait until write_queue_empty = '1';
     wait_cycles(2);
 
-    -- Queue write transaction
-    queue_write(
-      queue => write_queue,
-      tail  => write_tail,
-      count => write_count,
+    -- Queue write transaction using master BFM's internal queue
+    write_success := master_bfm.axi_queue_write(
       addr => TEST_ADDR,
       data => TEST_DATA,
       strb => TEST_STRB,
       prot => TEST_PROT
     );
+    assert write_success report "Failed to queue write transaction" severity error;
 
     -- Wait for write to complete
     wait until write_queue_empty = '1';
@@ -159,14 +146,12 @@ begin
     wait until read_queue_empty = '1';
     wait_cycles(2);
 
-    -- Queue read transaction
-    queue_read(
-      queue => read_queue,
-      tail => read_tail,
-      count => read_count,
+    -- Queue read transaction using master BFM's internal queue
+    read_success := master_bfm.axi_queue_read(
       addr => TEST_ADDR,
       prot => TEST_PROT
     );
+    assert read_success report "Failed to queue read transaction" severity error;
 
     -- Wait for read to complete
     wait until read_queue_empty = '1';

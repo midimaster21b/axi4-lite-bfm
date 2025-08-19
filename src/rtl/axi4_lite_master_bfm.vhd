@@ -19,7 +19,7 @@ entity axi4_lite_master_bfm is
     axi_m2s : out axi4_lite_m2s_t;
     axi_s2m : in  axi4_lite_s2m_t;
 
-    -- User Interface
+    -- Queue Status
     write_queue_full  : out std_logic;
     read_queue_full   : out std_logic;
     write_queue_empty : out std_logic;
@@ -33,10 +33,10 @@ architecture rtl of axi4_lite_master_bfm is
     addr(ADDR_WIDTH-1 downto 0),
     data(DATA_WIDTH-1 downto 0),
     strb((DATA_WIDTH/8)-1 downto 0)
-    );
+  );
   signal read_queue  : read_queue_t(MAX_QUEUE_SIZE-1 downto 0)(
     addr(ADDR_WIDTH-1 downto 0)
-    );
+  );
   signal write_head, write_tail : integer range 0 to MAX_QUEUE_SIZE-1;
   signal read_head, read_tail   : integer range 0 to MAX_QUEUE_SIZE-1;
   signal write_count, read_count : integer range 0 to MAX_QUEUE_SIZE;
@@ -53,14 +53,60 @@ architecture rtl of axi4_lite_master_bfm is
     addr(ADDR_WIDTH-1 downto 0),
     data(DATA_WIDTH-1 downto 0),
     strb((DATA_WIDTH/8)-1 downto 0)
-    );
+  );
   signal current_read  : read_transaction_t(
     addr(ADDR_WIDTH-1 downto 0)
-    );
+  );
 
   ----------------------------------------------------------------------------
-  -- Functions & Procedures
+  -- Queue Management Functions
   ----------------------------------------------------------------------------
+  -- Queue a write transaction
+  impure function axi_queue_write(
+    addr : std_logic_vector(ADDR_WIDTH-1 downto 0);
+    data : std_logic_vector(DATA_WIDTH-1 downto 0);
+    strb : std_logic_vector((DATA_WIDTH/8)-1 downto 0);
+    prot : std_logic_vector(2 downto 0)
+  ) return boolean is
+  begin
+    if write_count < MAX_QUEUE_SIZE then
+      -- Call the package procedure to handle signal assignments
+      queue_write(
+        queue => write_queue,
+        tail => write_tail,
+        count => write_count,
+        addr => addr,
+        data => data,
+        strb => strb,
+        prot => prot
+      );
+      return true;
+    else
+      return false;
+    end if;
+  end function;
+
+  -- Queue a read transaction
+  impure function axi_queue_read(
+    addr : std_logic_vector(ADDR_WIDTH-1 downto 0);
+    prot : std_logic_vector(2 downto 0)
+  ) return boolean is
+  begin
+    if read_count < MAX_QUEUE_SIZE then
+      -- Call the package procedure to handle signal assignments
+      queue_read(
+        queue => read_queue,
+        tail => read_tail,
+        count => read_count,
+        addr => addr,
+        prot => prot
+      );
+      return true;
+    else
+      return false;
+    end if;
+  end function;
+
 begin
   -- Queue status outputs
   write_queue_full  <= '1' when write_count = MAX_QUEUE_SIZE else '0';
@@ -169,8 +215,5 @@ begin
       end case;
     end if;
   end process;
-
-
-
 
 end architecture;
