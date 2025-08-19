@@ -76,9 +76,17 @@ begin
       write_head <= 0;
       write_tail <= 0;
       write_count <= 0;
+
       axi_m2s.aw.awvalid <= '0';
+      axi_m2s.aw.awaddr <= (others => '0');
+      axi_m2s.aw.awprot <= (others => '0');
+
       axi_m2s.w.wvalid <= '0';
-      axi_m2s.b.bready <= '1';
+      axi_m2s.w.wdata <= (others => '0');
+      axi_m2s.w.wstrb <= (others => '0');
+
+      axi_m2s.b.bready <= '0';
+
     elsif rising_edge(clk) then
       case write_state is
         when IDLE =>
@@ -128,7 +136,9 @@ begin
       read_tail <= 0;
       read_count <= 0;
       axi_m2s.ar.arvalid <= '0';
-      axi_m2s.r.rready <= '1';
+      axi_m2s.ar.araddr  <= (others => '0');
+      axi_m2s.ar.arprot  <= (others => '0');
+      axi_m2s.r.rready   <= '1';
     elsif rising_edge(clk) then
       case read_state is
         when IDLE =>

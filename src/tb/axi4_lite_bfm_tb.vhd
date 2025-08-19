@@ -59,57 +59,6 @@ architecture tb of axi4_lite_bfm_tb is
   -- Test control signals
   signal test_done : boolean := false;
 
-  -- Component declarations
-  component axi4_lite_master_bfm is
-    generic (
-      ADDR_WIDTH : integer := 32;
-      DATA_WIDTH : integer := 32;
-      MAX_QUEUE_SIZE : integer := 16
-    );
-    port (
-      clk     : in  std_logic;
-      rst_n   : in  std_logic;
-      axi_m2s : out axi4_lite_m2s_t;
-      axi_s2m : in  axi4_lite_s2m_t;
-      write_queue_full  : out std_logic;
-      read_queue_full   : out std_logic;
-      write_queue_empty : out std_logic;
-      read_queue_empty  : out std_logic
-    );
-  end component;
-
-  component axi4_lite_slave_bfm is
-    generic (
-      ADDR_WIDTH : integer := 32;
-      DATA_WIDTH : integer := 32;
-      MIN_RESP_DELAY : integer := 0;
-      MAX_RESP_DELAY : integer := 5
-    );
-    port (
-      clk     : in  std_logic;
-      rst_n   : in  std_logic;
-      s_axi_awvalid : in  std_logic;
-      s_axi_awready : out std_logic;
-      s_axi_awaddr  : in  std_logic_vector(ADDR_WIDTH-1 downto 0);
-      s_axi_awprot  : in  std_logic_vector(2 downto 0);
-      s_axi_wvalid  : in  std_logic;
-      s_axi_wready  : out std_logic;
-      s_axi_wdata   : in  std_logic_vector(DATA_WIDTH-1 downto 0);
-      s_axi_wstrb   : in  std_logic_vector((DATA_WIDTH/8)-1 downto 0);
-      s_axi_bvalid  : out std_logic;
-      s_axi_bready  : in  std_logic;
-      s_axi_bresp   : out std_logic_vector(1 downto 0);
-      s_axi_arvalid : in  std_logic;
-      s_axi_arready : out std_logic;
-      s_axi_araddr  : in  std_logic_vector(ADDR_WIDTH-1 downto 0);
-      s_axi_arprot  : in  std_logic_vector(2 downto 0);
-      s_axi_rvalid  : out std_logic;
-      s_axi_rready  : in  std_logic;
-      s_axi_rdata   : out std_logic_vector(DATA_WIDTH-1 downto 0);
-      s_axi_rresp   : out std_logic_vector(1 downto 0)
-    );
-  end component;
-
 begin
   -- Clock generation
   clk <= not clk after CLK_PERIOD/2;
@@ -118,7 +67,7 @@ begin
   rst_n <= '0', '1' after 100 ns;
 
   -- Instantiate master BFM
-  master_bfm : axi4_lite_master_bfm
+  master_bfm : entity work.axi4_lite_master_bfm
     generic map (
       ADDR_WIDTH => ADDR_WIDTH,
       DATA_WIDTH => DATA_WIDTH
@@ -135,7 +84,7 @@ begin
     );
 
   -- Instantiate slave BFM
-  slave_bfm : axi4_lite_slave_bfm
+  slave_bfm : entity work.axi4_lite_slave_bfm
     generic map (
       ADDR_WIDTH => ADDR_WIDTH,
       DATA_WIDTH => DATA_WIDTH
