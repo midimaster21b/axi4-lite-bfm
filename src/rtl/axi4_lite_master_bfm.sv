@@ -1,4 +1,6 @@
-module axi4_lite_master_bfm(conn);
+module axi4_lite_master_bfm #(parameter
+			      BFM_NAME="m_axi4_lite"
+			      ) (conn);
    axi4_lite_if conn;
 
    ////////////////////////////////////////////////////////////////////////////
@@ -28,7 +30,6 @@ module axi4_lite_master_bfm(conn);
    // Read data channel
    localparam NUM_RDATA_BITS  = NUM_DATA_BITS;
    localparam NUM_RRESP_BITS  = NUM_RESP_BITS;
-
 
 
    ////////////////////////////////////////////////////////////////////////////
@@ -132,37 +133,69 @@ module axi4_lite_master_bfm(conn);
    } axi4_lite_r_beat_t;
 
 
-   typedef mailbox #(axi4_lite_beat_t) axi4_lite_inbox_t;
+   // Define the mailbox types for each channel
+   // typedef mailbox #(axi4_lite_beat_t) axi4_lite_inbox_t;
+   typedef mailbox #(axi4_lite_aw_beat_t) axi4_lite_aw_inbox_t;
+   typedef mailbox #(axi4_lite_w_beat_t)  axi4_lite_w_inbox_t;
+   typedef mailbox #(axi4_lite_b_beat_t)  axi4_lite_b_inbox_t;
+   typedef mailbox #(axi4_lite_ar_beat_t) axi4_lite_ar_inbox_t;
+   typedef mailbox #(axi4_lite_r_beat_t)  axi4_lite_r_inbox_t;
 
-   axi4_lite_inbox_t axi4_lite_inbox  = new();
-   axi4_lite_inbox_t axi4_lite_expect = new();
+   // Create mailboxes for tx/rx beats
+   // axi4_lite_inbox_t axi4_lite_inbox  = new();
+   axi4_lite_aw_inbox_t axi4_lite_aw_inbox  = new();
+   axi4_lite_w_inbox_t  axi4_lite_w_inbox   = new();
+   axi4_lite_b_inbox_t  axi4_lite_b_inbox   = new();
+   axi4_lite_ar_inbox_t axi4_lite_ar_inbox  = new();
+   axi4_lite_r_inbox_t  axi4_lite_r_inbox   = new();
 
-   axi4_lite_beat_t empty_beat = '{default: '0};
-   axi4_lite_beat_t temp_beat;
+   // Create mailboxes for expected beats
+   // axi4_lite_inbox_t axi4_lite_expect = new();
+   axi4_lite_aw_inbox_t axi4_lite_aw_expect = new();
+   axi4_lite_w_inbox_t  axi4_lite_w_expect  = new();
+   axi4_lite_b_inbox_t  axi4_lite_b_expect  = new();
+   axi4_lite_ar_inbox_t axi4_lite_ar_expect = new();
+   axi4_lite_r_inbox_t  axi4_lite_r_expect  = new();
+
+   // Empty beats
+   // axi4_lite_beat_t empty_beat = '{default: '0};
+   axi4_lite_aw_beat_t empty_aw_beat = '{default: '0};
+   axi4_lite_w_beat_t  empty_w_beat  = '{default: '0};
+   axi4_lite_b_beat_t  empty_b_beat  = '{default: '0};
+   axi4_lite_ar_beat_t empty_ar_beat = '{default: '0};
+   axi4_lite_r_beat_t  empty_r_beat  = '{default: '0};
+
+   // Temporary usable beats
+   // axi4_lite_beat_t temp_beat;
+   axi4_lite_aw_beat_t temp_aw_beat;
+   axi4_lite_w_beat_t  temp_w_beat;
+   axi4_lite_b_beat_t  temp_b_beat;
+   axi4_lite_ar_beat_t temp_ar_beat;
+   axi4_lite_r_beat_t  temp_r_beat;
 
 
-   ////////////////////////////////////////////////////////////////////////////
-   // Write inbox
-   ////////////////////////////////////////////////////////////////////////////
-   typedef mailbox #(axi4_lite_write_beat_t) axi4_lite_write_inbox_t;
+   // ////////////////////////////////////////////////////////////////////////////
+   // // Write inbox
+   // ////////////////////////////////////////////////////////////////////////////
+   // typedef mailbox #(axi4_lite_write_beat_t) axi4_lite_write_inbox_t;
 
-   axi4_lite_write_inbox_t axi4_lite_write_inbox  = new();
-   axi4_lite_write_inbox_t axi4_lite_write_expect = new();
+   // axi4_lite_write_inbox_t axi4_lite_write_inbox  = new();
+   // axi4_lite_write_inbox_t axi4_lite_write_expect = new();
 
-   axi4_lite_write_beat_t empty_write_beat = '{default: '0};
-   axi4_lite_write_beat_t temp_write_beat;
+   // axi4_lite_write_beat_t empty_write_beat = '{default: '0};
+   // axi4_lite_write_beat_t temp_write_beat;
 
 
-   ////////////////////////////////////////////////////////////////////////////
-   // Read inbox
-   ////////////////////////////////////////////////////////////////////////////
-   typedef mailbox #(axi4_lite_read_beat_t) axi4_lite_read_inbox_t;
+   // ////////////////////////////////////////////////////////////////////////////
+   // // Read inbox
+   // ////////////////////////////////////////////////////////////////////////////
+   // typedef mailbox #(axi4_lite_read_beat_t) axi4_lite_read_inbox_t;
 
-   axi4_lite_read_inbox_t axi4_lite_read_inbox  = new();
-   axi4_lite_read_inbox_t axi4_lite_read_expect = new();
+   // axi4_lite_read_inbox_t axi4_lite_read_inbox  = new();
+   // axi4_lite_read_inbox_t axi4_lite_read_expect = new();
 
-   axi4_lite_read_beat_t empty_read_beat = '{default: '0};
-   axi4_lite_read_beat_t temp_read_beat;
+   // axi4_lite_read_beat_t empty_read_beat = '{default: '0};
+   // axi4_lite_read_beat_t temp_read_beat;
 
 
 
@@ -172,21 +205,59 @@ module axi4_lite_master_bfm(conn);
    ////////////////////////////////////////////////////////////////////////////
    ////////////////////////////////////////////////////////////////////////////
    /**************************************************************************
+    * Write address transaction
+    **************************************************************************/
+   task put_aw_beat (
+		     input logic [NUM_AWADDR_BITS-1:0] addr,
+		     input logic [NUM_AWPROT_BITS-1:0] prot = '0
+		     );
+
+      logic [aw_conn.DATA_BITS-1:0]	temp_aw;
+
+      begin
+	 temp_aw[AWADDR_OFFSET +: NUM_AWADDR_BITS] = addr;
+	 temp_aw[AWPROT_OFFSET +: NUM_AWPROT_BITS] = prot;
+
+	 write_addr.put_simple_beat(temp_aw);
+      end
+   endtask // put_aw_beat
+
+
+   /**************************************************************************
+    * Write data transaction
+    **************************************************************************/
+   task put_w_beat (
+		    input logic [NUM_WDATA_BITS-1:0] data,
+		    input logic [NUM_WSTRB_BITS-1:0] strb = '1
+		    );
+
+      logic [w_conn.DATA_BITS-1:0]    temp_w;
+
+      begin
+	 temp_w[WDATA_OFFSET +: NUM_WDATA_BITS] = data;
+	 temp_w[WSTRB_OFFSET +: NUM_WSTRB_BITS] = strb;
+
+	 write_data.put_simple_beat(temp_w);
+      end
+   endtask // put_w_beat
+
+
+   /**************************************************************************
     * Write data transaction
     **************************************************************************/
    task write;
       input  logic [NUM_DATA_BITS-1:0]  data;
       input  logic [NUM_ADDR_BITS-1:0]	addr;
-      output logic [NUM_RESP_BITS-1:0]  resp;
+      output logic [NUM_RESP_BITS-1:0]	resp;
       begin
 	 $timeformat(-9, 2, " ns", 20);
 	 $display("%t: m_axil - Write Data - Addr: %X, Data: %x", $time, addr, data);
-	 write_addr.put_simple_beat(addr);
-	 write_data.put_simple_beat(data);
+	 put_aw_beat(.addr(addr));
+	 put_w_beat(.data(data));
 	 $display("%t: m_axil - Writing done, waiting for respone...", $time);
-	 bresp.expect_beat(2'h1);
+	 write_response.expect_beat(2'h1);
 	 $display("%t: m_axil - Writing done, getting response...", $time);
-	 bresp.get_beat(resp);
+	 write_response.get_beat(resp);
 	 $display("%t: m_axil - Writing done, got response...", $time);
       end
    endtask
@@ -197,6 +268,25 @@ module axi4_lite_master_bfm(conn);
    // Read operations
    ////////////////////////////////////////////////////////////////////////////
    ////////////////////////////////////////////////////////////////////////////
+   /**************************************************************************
+    * Read address transaction
+    **************************************************************************/
+   task put_ar_beat (
+		    input logic [NUM_ARADDR_BITS-1:0] addr,
+		    input logic [NUM_ARPROT_BITS-1:0] prot = '0
+		    );
+
+      logic [ar_conn.DATA_BITS-1:0]    temp_ar;
+
+      begin
+	 temp_ar[ARADDR_OFFSET +: NUM_ARADDR_BITS] = addr;
+	 temp_ar[ARPROT_OFFSET +: NUM_ARPROT_BITS] = prot;
+
+	 read_addr.put_simple_beat(temp_ar);
+      end
+   endtask // put_ar_beat
+
+
    /**************************************************************************
     * Read data transaction
     **************************************************************************/
@@ -217,7 +307,7 @@ module axi4_lite_master_bfm(conn);
    ////////////////////////////////////////////////////////////////////////////
    ////////////////////////////////////////////////////////////////////////////
    // Write address channel
-   handshake_if #(.DATA_BITS($bits(axi4_lite_aw_beat_t)-2) aw_conn(.clk(conn.aclk), .rst(conn.aresetn));
+   handshake_if #(.DATA_BITS($bits(axi4_lite_aw_beat_t)-2)) aw_conn(.clk(conn.aclk), .rst(conn.aresetn));
    handshake_master #(.IFACE_NAME($sformatf("m_axi4_lite_%s_aw", BFM_NAME))) write_addr(aw_conn);
 
    assign conn.awvalid  = aw_conn.valid;
@@ -227,7 +317,7 @@ module axi4_lite_master_bfm(conn);
 
 
    // Write data channel
-   handshake_if #(.DATA_BITS($bits(axi4_lite_w_beat_t)-2) w_conn(.clk(conn.aclk), .rst(conn.aresetn));
+   handshake_if #(.DATA_BITS($bits(axi4_lite_w_beat_t)-2)) w_conn(.clk(conn.aclk), .rst(conn.aresetn));
    handshake_master #(.IFACE_NAME($sformatf("m_axi4_lite_%s_w", BFM_NAME))) write_data(w_conn);
 
    assign conn.wvalid  = w_conn.valid;
@@ -238,7 +328,7 @@ module axi4_lite_master_bfm(conn);
 
    // Write response channel
    handshake_if #(.DATA_BITS($bits(axi4_lite_b_beat_t)-2)) b_conn(.clk(conn.aclk), .rst(conn.aresetn));
-   handshake_slave #(.ALWAYS_READY(0), .IFACE_NAME($sformatf("m_axi4_lite_%s_b", BFM_NAME))) bresp(b_conn);
+   handshake_slave #(.ALWAYS_READY(0), .IFACE_NAME($sformatf("m_axi4_lite_%s_b", BFM_NAME))) write_response(b_conn);
 
    assign b_conn.valid = conn.bvalid;
    assign conn.bready  = b_conn.ready;

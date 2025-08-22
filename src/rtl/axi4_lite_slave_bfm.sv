@@ -1,4 +1,6 @@
-module axi4_lite_slave_bfm(conn);
+module axi4_lite_slave_bfm #(parameter
+			     BFM_NAME="s_axi4_lite"
+			     ) (conn);
    axi4_lite_if conn;
 
    ////////////////////////////////////////////////////////////////////////////
@@ -151,7 +153,7 @@ module axi4_lite_slave_bfm(conn);
       begin
 	 write_addr.get_beat(addr);
 	 write_data.get_beat(data);
-	 bresp.put_simple_beat(resp);
+	 write_response.put_simple_beat(resp);
       end
    endtask
 
@@ -196,7 +198,7 @@ module axi4_lite_slave_bfm(conn);
 
    // Write response channel
    handshake_if #(.DATA_BITS($bits(axi4_lite_b_beat_t)-2)) b_conn(.clk(conn.aclk), .rst(conn.aresetn));
-   handshake_master #(.IFACE_NAME($sformatf("s_axi4_lite_%s_b", BFM_NAME))) bresp(b_conn);
+   handshake_master #(.IFACE_NAME($sformatf("s_axi4_lite_%s_b", BFM_NAME))) write_response(b_conn);
 
    assign conn.bvalid  = b_conn.valid;
    assign b_conn.ready = conn.bready;

@@ -3,7 +3,6 @@ module axi4_lite_tb;
    localparam DATA_BYTES_P = 4;
    localparam ADDR_BYTES_P = 1;
 
-
    logic aclk     = 0;
    logic aresetn  = 0;
 
@@ -67,15 +66,8 @@ module axi4_lite_tb;
    assign rdata   = connector.rdata;
    assign rresp   = connector.rresp;
 
-
-   initial begin
-      #500ns;
-
-      // dut_master.write(.data(32'hDEADBEEF), .addr(8'hC4), .resp());
-      // dut_master.read(.addr(8'hC4), .data());
-   end
-
-
+   always #10 aclk = ~aclk;
+   initial #100ns aresetn = '1;
 
    ////////////////////////////////////////////
    // Master BFM
@@ -114,15 +106,6 @@ module axi4_lite_tb;
       dut_slave.receive(.data(s_data_tmp), .addr(s_addr_tmp), .resp(s_bresp_tmp));
       dut_slave.receive(.data(s_data_tmp), .addr(s_addr_tmp), .resp(s_bresp_tmp));
       dut_slave.respond(.addr(8'hC4), .data(32'hABCD1234));
-   end
-
-
-
-
-   initial begin
-      forever begin
-	 #10 aclk = ~aclk;
-      end
    end
 
 
